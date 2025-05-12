@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>✉ Módulo 2 - Simulador de Phishing</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f1f3f4;
+      display: flex;
+    }
+    .sidebar {
+      width: 200px;
+      background-color: #fff;
+      border-right: 1px solid #ccc;
+      height: 100vh;
+      padding-top: 20px;
+      border-radius: 6px
+    }
+    .sidebar h3 {
+      margin: 0 0 15px 20px;
+      font-size: 16px;
+      color: #555;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar li {
+      padding: 10px 20px;
+      cursor: pointer;
+      color: #333;
+    }
+    .sidebar li:hover, .sidebar .active {
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+    .main {
+      flex-grow: 1;
+    }
+    .top-bar {
+      background-color: #ffffff;
+      padding: 12px 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      font-size: 18px;
+      color: #333;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 6px;
+      margin: auto 10px;
+    }
+    .inbox {
+      max-width: 1300px;
+      margin: 10px auto;
+      background-color: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+    }
+    .email-item {
+      padding: 10px 20px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    .email-item:hover {
+      background-color: #f6f6f6;
+    }
+    .email-sender {
+      font-weight: bold;
+      color: #333;
+    }
+    .email-subject {
+      color: #555;
+      margin-top: 2px;
+    }
+    .email-preview {
+      flex: 1;
+      padding-left: 10px;
+    }
+    .email-date {
+      font-size: 12px;
+      color: #888;
+    }
+    .email-window {
+      max-width: 1300px;
+      margin: 20px auto;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+      display: none;
+    }
+    .email-header, .email-body {
+      padding: 20px;
+    }
+    .email-header h2 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      color: #202124;
+    }
+    .email-body img {
+      max-width: 300px;
+      margin: 50px 0;
+    }
+    .email-body a {
+      color: #1a73e8;
+      text-decoration: underline;
+      word-break: break-word;
+    }
+    .actions {
+      text-align: center;
+      margin: 20px;
+      display: none;
+    }
+    .actions button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 0 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+    }
+    .real {
+      background-color: #4caf50;
+      color: white;
+    }
+    .phishing {
+      background-color: #f44336;
+      color: white;
+    }
+    .feedback {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 15px;
+      background-color: #fff3cd;
+      border-left: 6px solid #ffecb5;
+      font-size: 14px;
+      color: #664d03;
+      border-radius: 6px;
+      display: none;
+      text-align: center;
+    }
+    .btn-back {
+      margin-top: 20px;
+      background: #ccc;
+      color: #000;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div style="text-align: center; margin-bottom: 10px;">
+      <img src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/logo_gmail_lockup_default_1x_r2.png" alt="Gmail" style="width: 120px; margin-bottom: 10px;" />
+    </div>
+    <h3>Carpetas</h3>
+    <ul>
+      <li class="active" onclick="volverInbox()">📥 Entrada</li>
+      <li onclick="mostrarVacio()">⭐ Destacados</li>
+      <li onclick="mostrarVacio()">📤 Enviados</li>
+      <li onclick="mostrarVacio()">📝 Borradores</li>
+      <li onclick="mostrarVacio()">🚫 Spam</li>
+      <li onclick="mostrarVacio()">🗑 Papelera</li>
+    </ul>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="top-bar">
+      <div>Bandeja de Entrada</div>
+      <div style="display: flex; align-items: center; font-size: 14px; color: #555;">
+        estacion_ciberseguridad@gmail.com
+        <img src="https://www.gstatic.com/images/branding/product/2x/avatar_circle_blue_512dp.png" style="width: 32px; height: 32px; margin-left: 10px; border-radius: 50%;">
+      </div>
+    </div>
+
+    <div class="inbox" id="inbox"></div>
+
+    <div class="email-window" id="emailWindow">
+      <div class="email-header">
+        <h2 id="asunto"></h2>
+        <p><strong>De:</strong> <span id="remitente"></span></p>
+      </div>
+      <div class="email-body" id="cuerpo"></div>
+    </div>
+
+    <div class="actions" id="actions">
+      <button class="real" onclick="responder(false)">Es un correo real</button>
+      <button class="phishing" onclick="responder(true)">Es un phishing</button>
+    </div>
+
+    <div class="feedback" id="resultado"></div>
+  </div>
+
+  <script>
+    const fechas = ["hace 2 h", "ayer", "hace 3 días", "hoy", "martes", "viernes"];
+    const correos = [];
+
+    function crearCorreo(asunto, remitente, cuerpo, phishing, explicacion) {
+      return { asunto, remitente, cuerpo, phishing, explicacion };
+    }
+    correos.push(
+      crearCorreo("Actualiza tu cuenta BBVA",
+    "BBVA Seguridad <alerta@bbva-seguridad.com>",
+    `<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/BBVA_2019.svg/2560px-BBVA_2019.svg.png"width="300"><br>
+     Estimado cliente:<br>
+     Hemos detectado un acceso no autorizado a su cuenta. <br>
+     <br>
+     
+     Acceda a su cuenta de inmediato y verifique su identidad:<br>
+     <br>
+     <a href="http://bbva-verifica.info">http://bbva-verifica.info</a>`,
+    true, "Dominio http y uso de lenguaje urgente"
+  ),
+  crearCorreo("Factura disponible - Naturgy",
+    "Naturgy <facturas@naturgy.es>",
+    `<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Naturgy.svg/2560px-Naturgy.svg.png"width="300"><br>
+    <br>
+     Ya tiene disponible la factura de sus servicios de luz y gas , <br> puede visualizarla y descargarla en el siguiente enlace  :<br>
+     <a href="https://clientes.naturgy.es/factura">https://clientes.naturgy.es/factura</a>`,
+    false, "Dominio y contenido verificado"
+  ),
+  crearCorreo("Reparto fallido - Correos",
+    "Correos <notificacion@correos24h.net>",
+    `<img src="https://upload.wikimedia.org/wikipedia/commons/2/2d/Correos_logo.svg" width="500"><br>
+     Su paquete con referencia : PK00741932EX no ha podido ser entregado tras 2 intentos.<br>
+     <br>
+     Puede solicitar nueva entrega mediante el pago de  3,99€ :<br>
+     <br>
+     <a href="http://correosexpress-envios.com">http://correosexpress-envios.com</a>`,
+    true, "Peticion de pago y remitente falso"
+  ),
+  crearCorreo("Gana un iPhone 15 Pro",
+    "Apple Sorteos <promos@apple-premios.com>",
+       ` Tu cuenta aparecia registrada en nuestra base de datos y ¡Has sido seleccionado!<br>
+        <br>
+    <img src="https://www.apple.com/newsroom/images/2023/09/apple-unveils-iphone-15-pro-and-iphone-15-pro-max/article/Apple-iPhone-15-Pro-lineup-color-lineup-geo-230912_big.jpg.large.jpg" width="800"><br>
+     
+     Accede para completar el formulario y poder enviarte tu premio :<br>
+     <a href="http://iphone-premios.es">http://Apple-premios.es</a>`,
+    true, "Promesa poco creible y dominio falso"
+  ),
+  crearCorreo("Inicio de sesion sospechoso - Instagram",
+    "Instagram Seguridad <Instagran_Seguridad@mail>",
+       ` Hemos detectado un inicio de sesion inusual :<br>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg"><br>
+    
+     Android | Mountain View , California <br>
+    <img src="https://www.weather-forecast.com/locationmaps/Mountain-View.10.gif"> 
+     <br>
+     Para proteger tu cuenta accede con tus credenciales y dinos si has sido tu.
+     <a href="https://_instagram.com/accounts/activity">Revisar ahora</a>`,
+    true, "Enlace para restablecer contraseña(_instagram.com) y remitente Falso(Instagran) "
+  ),
+  crearCorreo("Paquete pendiente - DHL",
+    "DHL Notificaciones <entrega@dhl-tracking.net>",
+    `Tu paquete esta en espera por datos incompletos.<br>
+    <img src="https://images.seeklogo.com/logo-png/4/1/dhl-logo-png_seeklogo-40800.png" width="250"><br>
+      Confirma datos o sera devuelto  :<br>
+     <a href="http://-dhl-paquete.com">http://-dhl-paquete.com</a>`,
+    true, "Uso de dominio http y falso (-dhl-paquete.com) y uso de urgencia y escasez de referencias (seguimento o datos personales) fiables"
+  ),
+  crearCorreo("Confirmacion de cuenta Google",
+    "Google <no-reply@accounts.google.com>",
+    `<img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" width="100"><br>
+     Acceso reciente desde nuevo dispositivo.<br>
+     <a href="https://myaccount.google.com/security">Gestionar seguridad</a>`,
+    false, "Mensaje y dominio oficial"
+  ),
+  crearCorreo("Factura Endesa",
+    "Endesa <endesa.clientes@facturas.es>",
+    ` Ya tiene disponible la factura de sus servicios de luz y gas ,<br>
+    <img src="https://www.naturclima.energy/wp-content/uploads/2023/03/Logo-Endesa.png"><br>
+     <br> puede descargarla en el siguiente enlace  :<br>
+     <a href="https://cli3ntes.endesa.com/f4cturas">Factura.zip</a>`,
+    true, "El correo parece real pero el archivo adjunto es .zip"
+  ),
+  crearCorreo("Bloqueo de cuenta PayPal",
+    "PayPal Alertas <paypal@seguro-alert.com>",
+    `Su cuenta ha sido bloqueada temporalmente.<br>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" width="100"><br>
+     Su cuenta ha sido bloqueada por multiples intentos de acceso con credenciales incorrectas , introduce tus datos de usuario en el siguiente enlace para recuperar el acceso.<br>
+     <a href="http://paypal-alertas.com">Restaurar acceso</a>`,
+    true, "Dominio sospechoso y tono alarmante"
+  ),
+  crearCorreo("Oferta laboral urgente",
+    "RRHH <empleo@trabajoya.org>",
+    `¿Buscas ingresos altos desde casa?<br><br>
+    Estamos contratando,  Gana 3000€/mes.<br><br>
+    Solo accede al enlace para que te detallemos la oferta:<br><br>
+     <a href="http://trabajofacil.top">Empieza ya</a>`,
+    true, "Promesa irrealista sin datos legales"
+  ),
+
+  crearCorreo("Notificacion de cobro - Bizum",
+    "Bizum <avisos@bizumseguro.net>",
+    `Registrado correctamente el cobro de 180€ a tu cuenta.<br><img src=https://www.erkorekaconsultores.com/wp-content/uploads/2020/01/logo-vector-bizum.jpg" width="300"><br>
+     <br>
+     <a href="http://bizumseguro-alerta.es">Revisar ahora</a>`,
+    true, "Remitente parece real, pero el dominio del enlace es falso y el pago que se indica carece de contexto"
+  ),
+  crearCorreo("Problema con tus claves - Facebook",
+    "Facebook <support@facebook.com>",
+    `<img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png" width="300"><br>
+     Detectamos un intento de acceso con tus claves. Verifica tu identidad:<br>
+     <a href="https://facebook.com/settings/security">facebook.com/settings/security</a>`,
+    false, "Dominio legi­timo y contenido valido"
+  ),
+  crearCorreo("Multa de trafico - DGT",
+    "DGT <notificaciones@dgt-multas.com>",
+    `Multa por exceso de velocidad (67 km/h en zona limitada a 50 km/h) Importe 150€ .<br>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZzSysTLIOhYU-b_qOgkSPHwziuFBd71dz_UXUWrupZpHI-1_j3ajcnYlnmzdHDy9iZg&usqp=CAU" width="300"><br>
+     <br>
+     Realiza el pago ahora para tener un 50% de descuento en el importe. 
+     <a href="http://pagamultas-dgt.es">Consultar multa</a>`,
+    true, "Dominio falso y contenido intimidante"
+  ),
+  crearCorreo("Amazon: Problemas con tu pedido",
+    "Amazon Soporte <cuentas@amazon-check.net>",
+    `Su paquete se encuentra en la aduana . Puede que DHL requiera informacion adicional por su parte <br>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" width="300"><br>
+
+      Acceda al enlace para verificar:<br>
+     <a href="https://DHL_2_Aduanacheck.net">https://DHL_2_Aduanacheck.net</a>`,
+    true, "Dominio fraudulento Y Sospechoso que Amazon te redireccione en un correo suyo a otra empresa "
+  ),
+  crearCorreo("Pago automatico realizado",
+    "Bankinter <pagos@bankinter.com>",
+    `<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Bankinter.svg/2560px-Bankinter.svg.png" width="200"><br>
+    Se ha realizado un cargo automatico ("Suscripcion Mensual Netflix: 5.99€" ) en tu cuenta ****4579.<br>
+     Si no reconoces esta operacion puedes acceder a tu cuenta mediante la app o pulsando en el enlace :<br>
+     <a href="https://bankinter.com/clientes">https://bankinter.com/clientes</a>`,
+    false, "Mensaje realista(Detalle de cargos y de cuenta, opcion para anular el cargo por medios habituales como la app) y dominio oficial"
+  ),
+  crearCorreo("Regalo por aniversario Movistar",
+    "Movistar <PREMIOS@M0VISTAR.com>",
+    `¡Cumplimos 100 años y queremos celebrarlo con quienes haceis que sea posible <br>
+    
+    Recibe tu regalo por nuestro aniversario!<br>
+    <img src="https://www.adslzone.net/app/uploads-adslzone.net/2023/06/movistar-dispositivos-gratis.jpg" width="300"><br>
+     
+     <a href="https://PREMIOS@M0VISTAR.com">https://PREMIOS@M0VISTAR.com</a>`,
+    true, "Aunque la informacion es real(Movistar cumplio 100 años), el remitente y el dominio son falsos(m0vistar en lugar de movistar)"
+  ),
+  crearCorreo("Google Drive - acceso compartido",
+    "Google Drive <noreply-shared@google.com>",
+    
+    `Alguien ha compartido un archivo contigo: (Fotos_verano: 31 archivos 89,3 MB)<br>
+    <img src="https://brandlogos.net/wp-content/uploads/2022/08/google_drive-logo_brandlogos.net_zrexb.png" width="200"><br>
+       
+    Puedes visualizar los archivos accediento a la app Google drive o a traves del siguiente enlace : 
+     <a href="https://drive.google.com">https://drive.google.com</a>`,
+    false, "Dominio y remitente verificado y habitual , contenido comun , opcion de acceso mediante app y ausencia de descargas"
+  ),
+  crearCorreo("Factura electrica - Iberdrola",
+    "Iberdrola Clientes <iberdrola@clientes.es>",
+    `
+    Ya tiene disponible su factura para el servicio de luz , puede visualizarla y descargarla accediendo a  nuestra app (Iberdrola Clientes) o Descargarla pulsando el enlace inferior <br><img src="https://cdn.elperiodicodelaenergia.com/2023/05/280829.jpg" width="300"><br>
+     
+     <a href="factura.pdf">Descargar factura</a>`,
+    false, "Dominio legi­timo y habitual , opciona uso de app y descarga en archivo .pdf"
+  ),
+  crearCorreo("¡Felicidades! Has ganado una PS5",
+    "Sorteo Online <sorteos@premios-instant.com>",
+    `<img src="https://hardzone.es/app/uploads-hardzone.es/2020/06/SONY-PS5.jpg" width="500"><br>
+     ¡Eres el afortunado ganador de una PS5!<br>
+     Reclama tu premio en : <br>
+     <a href="http://ganador-premios.com">http://ganador-premios.com</a>`,
+    true, "Te ha tocado un premio en el que no te has inscrito y de una pagina que no conoces , no lo se rick..."
+  ),
+  crearCorreo("Verifica cargos bancarios",
+    "CaixaBank Seguridad <verificacion@caixasegura.es>",
+    `Tu cuenta requiere verificacion por seguridad:<br>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Logo_CaixaBank.svg/1280px-Logo_CaixaBank.svg.png" width="250"><br>
+     
+    se han detectado varios cargos poco comunes en su cuenta acceda de inmediato.<br>
+     <a href="http://caixasegura-verifica.net">http://caixabank-verifica.net</a>`,
+    true, "Dominio falso, urgencia extrema y falta de datos identificativos o de acceso por medios habituales"
+  )
+);
+    let actual = {};
+    let correosOriginal = [...correos];
+    let correosAleatorios = [];
+
+    function renderInbox() {
+      correosAleatorios = [...correosOriginal].sort(() => Math.random() - 0.5);
+      const inbox = document.getElementById("inbox");
+      inbox.innerHTML = "";
+      correosAleatorios.forEach((correo, index) => {
+        inbox.innerHTML += `
+          <div class="email-item" onclick="abrirCorreo(${index})">
+            <div class="email-preview">
+              <div class="email-sender">${correo.remitente}</div>
+              <div class="email-subject">${correo.asunto}</div>
+            </div>
+            <div class="email-date">${fechas[Math.floor(Math.random() * fechas.length)]}</div>
+          </div>`;
+      });
+    }
+
+    function abrirCorreo(i) {
+      actual = correosAleatorios[i];
+      document.getElementById("inbox").style.display = "none";
+      document.getElementById("emailWindow").style.display = "block";
+      document.getElementById("actions").style.display = "block";
+      document.getElementById("resultado").style.display = "none";
+      document.getElementById("asunto").innerText = actual.asunto;
+      document.getElementById("remitente").innerText = actual.remitente;
+      document.getElementById("cuerpo").innerHTML = actual.cuerpo;
+      window.scrollTo(0, 0);
+    }
+
+    function responder(usuarioDicePhishing) {
+      const correcto = usuarioDicePhishing === actual.phishing;
+      const resultado = document.getElementById("resultado");
+      resultado.style.display = "block";
+      resultado.innerHTML = `
+        <strong>${correcto ? "✅ ¡Correcto!" : "❌ Incorrecto"}</strong><br>
+        ${actual.explicacion}<br><br>
+        <button class='btn-back' onclick='volverInbox()'>Volver a la bandeja</button>
+      `;
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function volverInbox() {
+      document.getElementById("emailWindow").style.display = "none";
+      document.getElementById("actions").style.display = "none";
+      document.getElementById("resultado").style.display = "none";
+      renderInbox();
+      document.getElementById("inbox").style.display = "block";
+    }
+
+    function mostrarVacio() {
+      document.getElementById("emailWindow").style.display = "none";
+      document.getElementById("actions").style.display = "none";
+      document.getElementById("inbox").innerHTML = `
+        <div style="text-align: center; padding: 40px; font-size: 16px; color: #777;">
+          Esta bandeja está vacía. Revisa la bandeja de entrada.
+        </div>`;
+    }
+
+    renderInbox();
+  </script>
+</body>
+</html>

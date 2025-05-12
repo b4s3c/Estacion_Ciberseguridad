@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🔐 Módulo 1 – Simulador de Contraseñas</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0c1b2a;
+      margin: 0;
+      padding: 20px;
+      color: #f0f0f0;
+      display: flex;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+      gap: 20px;
+    }
+    .seccion {
+      flex: 1;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px #0008;
+    }
+    .izquierda {
+      background: #1a2a3a;
+    }
+    .derecha {
+      background: #1b3739;
+    }
+    h1 {
+      text-align: center;
+      color: #ffffff;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    .subtitulo {
+      text-align: center;
+      font-size: 18px;
+      color: #ccc;
+      margin-bottom: 20px;
+    }
+    .opciones {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .opcion {
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #eef4ff;
+      font-weight: bold;
+      font-size: 16px;
+      color: #111;
+      text-align: center;
+      transition: all 0.4s ease;
+    }
+    .opcion:hover {
+      background: #cce6ff;
+    }
+    .resultado {
+      margin-top: 20px;
+      font-size: 17px;
+      text-align: center;
+    }
+    .boton-jugar {
+      display: block;
+      margin: 30px auto 0;
+      padding: 12px 30px;
+      background: #00bcd4;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 18px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #333;
+      color: #0ded14;
+    }
+    #resultadoEvaluacion {
+      margin-top: 20px;
+      background: #0f2c2c;
+      padding: 15px;
+      border-radius: 6px;
+      font-size: 16px;
+      line-height: 1.6em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="seccion izquierda">
+    <h1>🧩 ¿Cuál es la contraseña más segura?</h1>
+    <div class="subtitulo">Selecciona la contraseña más segura entre las siguientes:</div>
+    <div class="opciones" id="opcionesJuego"></div>
+    <div class="resultado" id="resultadoJuego"></div>
+    <button class="boton-jugar" onclick="cargarJuego()">🔁 Nueva ronda</button>
+  </div>
+  <div class="seccion derecha">
+    <h1>🔍 Evalúa tu propia contraseña</h1>
+    <input type="text" id="inputPassword" placeholder="Escribe tu contraseña aquí..." oninput="evaluarContraseña()">
+    <div id="resultadoEvaluacion"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
+<script>
+const listaNegra = ["123456", "password", "qwerty", "abc123", "111111", "123456789", "tequiero", "admin", "000000", "jorge123"];
+const baseContraseñas = [
+  { texto: "123456", nivel: "Débil", explicacion: "Una de las contraseñas más comunes del mundo." },
+  { texto: "password", nivel: "Débil", explicacion: "Literalmente significa 'contraseña'. Muy insegura." },
+  { texto: "qwerty", nivel: "Débil", explicacion: "Primera fila del teclado. Muy predecible." },
+  { texto: "maria1990", nivel: "Débil", explicacion: "Nombre + año de nacimiento, muy típico y fácil de adivinar." },
+  { texto: "juan123", nivel: "Débil", explicacion: "Nombre propio con números básicos. Muy común." },
+  { texto: "realMadrid", nivel: "Débil", explicacion: "Equipos de fútbol son muy usados como contraseñas." },
+  { texto: "dragon", nivel: "Débil", explicacion: "Palabra común en listas de contraseñas filtradas." },
+  { texto: "rocky2020", nivel: "Débil", explicacion: "Nombre de mascota + año. Muy frecuente y adivinable." },
+
+  // 🟠 Nivel medio (algo mejor, pero aún con riesgos)
+  { texto: "BarcelonaFC2024!", nivel: "Media", explicacion: "Larga y con número, pero si te conocen, es predecible." },
+  { texto: "C@feConLeche", nivel: "Media", explicacion: "Mejor que nada, pero puede tener relación contigo." },
+  { texto: "Julio*2023", nivel: "Media", explicacion: "Nombre propio + símbolo + año. Predecible si te conocen." },
+  { texto: "SuperMario64", nivel: "Media", explicacion: "Hace referencia a cultura popular, fácilmente asociable." },
+  { texto: "MisHijos123", nivel: "Media", explicacion: "Palabras personales + número. Mejorable." },
+  { texto: "MiPerroRocky", nivel: "Media", explicacion: "Nombre de mascota. Muy usado como contraseña." },
+  { texto: "Contraseña123", nivel: "Media", explicacion: "Es mejor que '123456', pero aún muy genérica." },
+
+  // ✅ Alta seguridad
+  { texto: "Zebra!2023*", nivel: "Alta", explicacion: "Buena longitud y mezcla de caracteres." },
+  { texto: "LuzRoja$91", nivel: "Alta", explicacion: "Incluye mayúsculas, símbolo y número. Bastante segura." },
+  { texto: "P@ssw0rd!Segura", nivel: "Alta", explicacion: "Simula algo común pero se refuerza con caracteres." },
+  { texto: "NoSoyUnRobot_84", nivel: "Alta", explicacion: "Frase inventada, original y segura." },
+
+  // 🟢 Excelente seguridad
+  { texto: "X#p9kT$3!qVr", nivel: "Excelente", explicacion: "Generada aleatoriamente. Muy difícil de romper." },
+  { texto: "dT4*L7z!wKq#", nivel: "Excelente", explicacion: "Muy compleja y sin sentido lógico. Ideal." }
+];
+
+function cargarJuego() {
+  const opciones = document.getElementById("opcionesJuego");
+  const resultado = document.getElementById("resultadoJuego");
+  resultado.innerHTML = "";
+
+  let seleccionadas = [];
+  while (seleccionadas.length < 4) {
+    const aleatoria = baseContraseñas[Math.floor(Math.random() * baseContraseñas.length)];
+    if (!seleccionadas.find(c => c.texto === aleatoria.texto)) {
+      seleccionadas.push(aleatoria);
+    }
+  }
+
+  opciones.innerHTML = "";
+  seleccionadas.forEach((opcion) => {
+    const div = document.createElement("div");
+    div.className = "opcion";
+    div.innerText = opcion.texto;
+    div.onclick = () => {
+      opciones.querySelectorAll(".opcion").forEach(o => o.onclick = null);
+      div.style.background = "#ffc107";
+      const niveles = { "Débil": 0, "Media": 1, "Alta": 2, "Excelente": 3 };
+      const mejor = Math.max(...seleccionadas.map(c => niveles[c.nivel]));
+      const seleccionada = niveles[opcion.nivel];
+      setTimeout(() => {
+        div.style.background = (seleccionada === mejor) ? "#4caf50" : "#f44336";
+        resultado.innerHTML = seleccionada === mejor
+          ? `✅ ¡Correcto! "${opcion.texto}" es la más segura.<br><i>Explicación:</i> ${opcion.explicacion}`
+          : `❌ No es la más segura. Nivel: ${opcion.nivel}<br><i>Explicación:</i> ${opcion.explicacion}`;
+      }, 2500);
+    };
+    opciones.appendChild(div);
+  });
+}
+
+function traducir(str) {
+  return str
+    .replace("less than a second", "menos de un segundo")
+    .replace("second", "segundo").replace("seconds", "segundos")
+    .replace("minute", "minuto").replace("minutes", "minutos")
+    .replace("hour", "hora").replace("hours", "horas")
+    .replace("day", "día").replace("days", "días")
+    .replace("month", "mes").replace("months", "meses")
+    .replace("year", "año").replace("years", "años")
+    .replace("century", "siglo").replace("centuries", "siglos");
+}
+function traducirFeedback(str) {
+  const mapa = {
+    "Add another word or two. Uncommon words are better.": "Agrega otra palabra o dos. Palabras poco comunes son mejores.",
+    "Names and surnames by themselves are easy to guess": "Los nombres y apellidos son fáciles de adivinar.",
+    "This is a top-10 common password": "Esta es una de las 10 contraseñas más comunes.",
+    "This is a top-100 common password": "Esta es una de las 100 contraseñas más comunes.",
+    "This is a very common password": "Esta es una contraseña muy común.",
+    "This is similar to a commonly used password": "Es similar a una contraseña comúnmente utilizada.",
+    "A word by itself is easy to guess": "Una sola palabra es fácil de adivinar.",
+    "Avoid dates and years that are associated with you": "Evita fechas y años que estén relacionados contigo",
+    "Common names and surnames are easy to guess": "Los nombres y apellidos comunes son fáciles de adivinar.",
+    "Capitalization doesn't help very much" : "El uso de Mayúsculas no mejora mucho la seguridad."
+  };
+  return mapa[str] || str;
+}
+
+function evaluarContraseña() {
+  const pass = document.getElementById("inputPassword").value;
+  const salida = document.getElementById("resultadoEvaluacion");
+  if (!pass) {
+    salida.innerHTML = "";
+    return;
+  }
+  const resultado = zxcvbn(pass);
+  const fuerza = resultado.score;
+  const tiempo = traducir(resultado.crack_times_display.offline_fast_hashing_1e10_per_second);
+  const sugerencias = resultado.feedback.suggestions.map(traducirFeedback).join("<br>") || "✔️ Buena elección.";
+  const advertencia = resultado.feedback.warning ? `<b>⚠️ ${traducirFeedback(resultado.feedback.warning)}</b><br>` : "";
+  const enListaNegra = listaNegra.includes(pass.toLowerCase());
+  let nivel = fuerza <= 1 ? "débil" : (fuerza === 2 ? "media" : "fuerte");
+  let textoNivel = fuerza <= 1 ? "Muy débil" : (fuerza === 2 ? "Aceptable" : "Segura");
+  salida.innerHTML = `
+    <b>🔐 Seguridad:</b> <span class="${nivel}">${textoNivel}</span><br><br>
+    <b>⏱️ Tiempo estimado de fuerza bruta:</b> ${tiempo}<br><br>
+    ${advertencia}
+    <b>💡 Sugerencias:</b><br>${sugerencias}<br><br>
+    ${enListaNegra ? "<b style='color:red'>🚫 Aparece en listas negras comunes.</b>" : ""}
+  `;
+}
+
+cargarJuego();
+</script>
+</body>
+</html>

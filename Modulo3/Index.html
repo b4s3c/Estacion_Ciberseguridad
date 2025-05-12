@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Escáner de Red - Módulo 3</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: monospace;
+      background-color: black;
+      color: #00ff00;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .contenedor {
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      text-align: center;
+      font-size: 26px;
+      background-color: black;
+      color: #00ffcc;
+      border: 3px solid #00ff00;
+      border-radius: 20px;
+      padding: 20px 40px;
+      display: inline-block;
+      margin: 30px auto;
+      width: fit-content;
+    }
+
+    button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #00ffcc;
+      border: none;
+      color: black;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .resultado {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid #0f0;
+      padding: 15px;
+      margin: 15px auto;
+      max-width: 600px;
+      border-radius: 8px;
+    }
+
+    #estado {
+      text-align: center;
+      display: none;
+      font-size: 16px;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 8px 16px;
+      border-radius: 6px;
+      width: fit-content;
+      margin: 10px auto;
+    }
+
+    svg {
+      width: 100%;
+      height: 400px;
+      display: block;
+      margin: auto;
+      background: #111;
+      border: 1px solid #0f0;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+
+    #ataqueModal {
+  display: none;
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #000;
+  color: #00ff00;
+  border: 2px solid #00ff00;
+  padding: 20px;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 10;
+  border-radius: 10px;
+  font-family: monospace;
+}
+
+
+    #ataqueModal pre, #ataqueModal div {
+      white-space: pre-wrap;
+      background-color: #000;
+      border: 1px dashed #0f0;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    #ataqueModal img {
+      max-width: 100%;
+      margin-top: 10px;
+      border: 2px solid #0f0;
+    }
+
+    svg circle:hover {
+      filter: drop-shadow(0 0 6px #00ffcc);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrixCanvas"></canvas>
+  <div class="contenedor">
+    <div style="text-align: center;">
+      <h1>🔍 Escáner de Red - Módulo 3</h1>
+    </div>
+    <button onclick="iniciarEscaneo()">Iniciar Escaneo</button>
+    <div id="estado">🔄 Escaneando red...</div>
+    <div id="resultados"></div>
+    <div style="text-align: center;">
+      <h2>🌐 Mapa de Red</h2>
+    </div>
+    <svg id="mapa"></svg>
+  </div>
+
+  <div id="ataqueModal">
+    <h3>🔓 Simulación de ataque</h3>
+    <div id="contenidoAtaque"></div>
+    <button onclick="cerrarModal()">❌ Cerrar</button>
+  </div>
+
+  <script>
+    // Matrix de fondo
+    const canvas = document.getElementById("matrixCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function ajustarCanvas() {
+      canvas.width = document.body.scrollWidth;
+      canvas.height = document.body.scrollHeight;
+    }
+
+    window.addEventListener("resize", ajustarCanvas);
+    window.addEventListener("scroll", ajustarCanvas);
+    ajustarCanvas();
+
+    const letras = "01".split("");
+    const fontSize = 14;
+    const columnas = canvas.width / fontSize;
+    const gotas = Array.from({ length: columnas }).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#0f0";
+      ctx.font = fontSize + "px monospace";
+      for (let i = 0; i < gotas.length; i++) {
+        const text = letras[Math.floor(Math.random() * letras.length)];
+        ctx.fillText(text, i * fontSize, gotas[i] * fontSize);
+        if (gotas[i] * fontSize > canvas.height || Math.random() > 0.95) gotas[i] = 0;
+        gotas[i]++;
+      }
+    }
+    setInterval(drawMatrix, 33);
+
+    function iniciarEscaneo() {
+      document.getElementById("estado").style.display = "block";
+      document.getElementById("resultados").innerHTML = "";
+      document.getElementById("mapa").innerHTML = "";
+
+      fetch("/scan")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("estado").style.display = "none";
+          mostrarResultados(data);
+          dibujarMapa(data);
+        })
+        .catch(err => {
+          document.getElementById("estado").style.display = "none";
+          document.getElementById("resultados").innerHTML = `<p style='color:red;'>❌ Error: ${err}</p>`;
+        });
+    }
+
+    function mostrarResultados(dispositivos) {
+      const contenedor = document.getElementById("resultados");
+      dispositivos.forEach(d => {
+        const div = document.createElement("div");
+        div.className = "resultado";
+        div.innerHTML = `
+          <div><strong>IP:</strong> ${d.ip}</div>
+          <div><strong>Tipo:</strong> ${d.tipo}</div>
+          <div><strong>SO:</strong> ${d.sistema}</div>
+          <div><strong>Puertos:</strong><ul>${d.puertos.map(p => `<li>${p}</li>`).join('')}</ul></div>
+          ${d.riesgos.length ? `<strong>Riesgos:</strong><ul>${d.riesgos.map(r => `<li>${r}</li>`).join('')}</ul>` : ""}
+          ${d.recomendaciones.length ? `<strong>Recomendaciones:</strong><ul>${d.recomendaciones.map(r => `<li>${r}</li>`).join('')}</ul>` : ""}
+          ${d.comandos?.length ? `
+            <div style="margin-top:10px;">
+              <button onclick="mostrarComandos(this)" style="font-size:14px;">⚙️ Ver solución</button>
+              <div class="comandos" style="display:none; margin-top:5px;">
+                <ul>${d.comandos.map(c => `<li><code>${c}</code></li>`).join('')}</ul>
+              </div>
+            </div>` : ""}
+          ${d.riesgos.length ? `
+            <div style="margin-top:10px;">
+              <button onclick='simularAtaque(${JSON.stringify(d.ip)}, ${JSON.stringify(d.puertos)})' style="font-size:14px;">🎯 Simular ataque</button>
+            </div>` : ""}
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function mostrarComandos(boton) {
+      const div = boton.nextElementSibling;
+      div.style.display = div.style.display === "none" ? "block" : "none";
+    }
+
+    function cerrarModal() {
+      document.getElementById("ataqueModal").style.display = "none";
+      document.getElementById("contenidoAtaque").innerHTML = "";
+    }
+
+    function simularAtaque(ip, puertos) {
+      const modal = document.getElementById("ataqueModal");
+      const cont = document.getElementById("contenidoAtaque");
+      modal.style.display = "block";
+      cont.innerHTML = "";
+
+      const animar = (lineas, callback) => {
+        let i = 0;
+        const escribir = () => {
+          if (i < lineas.length) {
+            cont.innerHTML += `<div>> ${lineas[i]}</div>`;
+            i++;
+            setTimeout(escribir, 300);
+          } else if (callback) {
+            callback();
+          }
+        };
+        escribir();
+      };
+
+      if (puertos.some(p => p.includes("554/"))) {
+        animar([
+          `Conectando a cámara IP en ${ip} ...`,
+          `Iniciando flujo RTSP ...`,
+          `Autenticación omitida (RTSP sin protección)`,
+          `Obteniendo imagen ...`
+        ], () => {
+          cont.innerHTML += `<img src="/simulacion/camara" alt="Cámara IP" style="max-width:100%; margin-top:10px; border:1px solid #0f0;">`;
+        });
+      } else if (puertos.some(p => p.includes("23/"))) {
+        animar([
+          `telnet ${ip}`,
+          `Trying ${ip} ...`,
+          `Connected.`,
+          `Login: admin`,
+          `Password: Clave2025`,
+          `# whoami`,
+          `root`,
+          `# cat /etc/passwd`,
+          `root:x:0:0:root:/root:/bin/bash`
+        ]);
+      } else if (puertos.some(p => p.includes("21/"))) {
+        animar([
+          `ftp ${ip}`,
+          `Connected to ${ip}`,
+          `Name (anonymous): anonymous`,
+          `230 Login successful`,
+          `ftp> ls`,
+          `ContabilidadEmpresa.doc`,
+          `ftp> get ContabilidadEmpresa.doc`
+        ]);
+      } else if (puertos.some(p => p.includes("22/"))) {
+        animar([
+          `ssh root@${ip}`,
+          `Welcome to ${ip}`,
+          `# whoami`,
+          `root`,
+          `# cat /etc/shadow`,
+          `root:$6$abc$longhashedpass...`
+        ]);
+      } else if (puertos.some(p => p.includes("80/"))) {
+        animar([
+          `$ curl http://${ip}`,
+          `Conexión realizada sin cifrado. HTTP expuesto , Iniciando ataque Man in the middle...`,
+          `⚠ Filtrando paquetes capturados`,
+          `Credenciales obtenidas visibles en texto plano`
+        ]);
+      } else if (puertos.some(p => p.includes("443/"))) {
+        animar([
+          `$ openssl s_client -connect ${ip}:443`,
+          `✖ Certificado autofirmado detectado.`,
+          `⚠ Suplantando certificado SSL .`,
+          `Certificado Verificado correctamente`,
+          `Acceso autorizado`
+        ]);
+      } else if (puertos.some(p => p.includes("8080/"))) {
+        animar([
+          `curl http://${ip}:8080`,
+          `Página de administración vulnerable detectada.`,
+          `Realizando inyeccion SQL`,
+          `Carga completada`,
+          `#whoami`,
+          `root:`
+        ]);
+      } else if (puertos.some(p => p.includes("139/"))) {
+        animar([
+          `$ smbclient -L \\\\${ip} -N`,
+          `Carpetas compartidas encontradas:`,
+          `- PUBLIC`,
+          `- USERS`,
+          `Acceso anónimo sin contraseña permitido.`
+        ]);
+      } else if (puertos.some(p => p.includes("135/"))) {
+        animar([
+          `$ rpcdump ${ip}`,
+          `RPC abierto. Windows DCOM expuesto.:`,
+          `Puede permitir ejecución remota si no está parcheado.`
+        ]);
+      } else {
+        animar([
+          `Accediendo al dispositivo ${ip} ...`,
+          `Detectando servicios abiertos ...`,
+          `Potencial vulnerabilidad detectada.`
+          `Iniciando acceso por fuerza bruta.`
+          `Acceso autorizado.`
+          `Eliminando Logs de sistema para evitar rastro de acceso no autorizado.`
+        ]);
+      }
+
+      cont.innerHTML = `<div style="background:#000; color:#0f0; padding:10px; font-family:monospace; max-height:400px; overflow:auto;">${salida}</div>`;
+  modal.style.display = "block";
+}
+    
+
+    function dibujarMapa(dispositivos) {
+      const svg = document.getElementById("mapa");
+      const cx = 400, cy = 200;
+      svg.innerHTML = `<circle cx="${cx}" cy="${cy}" r="30" fill="#00ffcc" stroke="#0f0" stroke-width="2"><title>Router</title></circle>
+      <text x="${cx - 20}" y="${cy + 5}" fill="#000">Router</text>`;
+      const step = 360 / dispositivos.length;
+      dispositivos.forEach((d, i) => {
+        const angle = (step * i) * Math.PI / 180;
+        const radius = 120;
+        const x = cx + radius * Math.cos(angle);
+        const y = cy + radius * Math.sin(angle);
+        const icon = d.tipo?.toLowerCase().includes("cámara") ? "📷" :
+                     d.tipo?.toLowerCase().includes("android") ? "📱" :
+                     d.tipo?.toLowerCase().includes("impresora") ? "🖨️" :
+                     d.tipo?.toLowerCase().includes("servidor") ? "🖥️" : "🧩";
+        const riesgo = d.riesgos?.length || 0;
+        let color = "#00ff00", borde = "#006600";
+        if (riesgo >= 4) {
+          color = "#ff3333"; borde = "#880000";
+        } else if (riesgo >= 2) {
+          color = "#ffff00"; borde = "#999900";
+        }
+        svg.innerHTML += `
+          <line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#0f0" stroke-width="1" />
+          <circle cx="${x}" cy="${y}" r="20" fill="${color}" stroke="${borde}" stroke-width="2">
+            <title>${d.ip}\nTipo: ${d.tipo}\nSO: ${d.sistema}\nPuertos:\n${d.puertos.join(', ')}\nRiesgos: ${riesgo}</title>
+          </circle>
+          <text x="${x - 10}" y="${y + 5}" font-size="14" fill="#000">${icon}</text>`;
+      });
+    }
+  </script>
+</body>
+</html>
