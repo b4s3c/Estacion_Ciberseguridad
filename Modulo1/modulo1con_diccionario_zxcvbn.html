@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -29,10 +28,12 @@
       box-shadow: 0 0 10px #0008;
     }
     .izquierda {
-      background: #1a2a3a;
+      background: #071f5f;
+      box-shadow: 0 0 20px #708ddd;
     }
     .derecha {
       background: #1b3739;
+      box-shadow: 0 0 10px #10ec64;
     }
     h1 {
       text-align: center;
@@ -46,52 +47,79 @@
       color: #ccc;
       margin-bottom: 20px;
     }
-    .opciones {
+    .opciones-millonario {
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 10px;
       margin-top: 20px;
     }
+
     .opcion {
-      padding: 12px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #eef4ff;
+      position: relative;
+      color: #fff;
       font-weight: bold;
-      font-size: 16px;
-      color: #111;
+      font-size: 18px;
+      padding: 10px 20px;
+      text-align: left;
+      background: linear-gradient(to right, #0c47a1, #003d91);
+      clip-path: polygon(0% 50%, 5% 0%, 95% 0%, 100% 50%, 95% 100%, 5% 100%);
+      border: 2px solid #ffffff44;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      box-shadow: 0 0 10px #000a;
       text-align: center;
-      transition: all 0.4s ease;
     }
+
     .opcion:hover {
-      background: #cce6ff;
+      background: linear-gradient(to right, #0053d1, #002f70);
+      transform: scale(1.03);
     }
+
+    .opcion.correcta {
+      background: #4caf50 !important;
+    }
+
+    .opcion.incorrecta {
+      background: #f44336 !important;
+    }
+
+    .opcion.seleccionada {
+      background: #ffc107 !important;
+      color: #000;
+    }
+
     .resultado {
       margin-top: 20px;
       font-size: 17px;
       text-align: center;
     }
+
     .boton-jugar {
       display: block;
       margin: 30px auto 0;
       padding: 12px 30px;
-      background: #00bcd4;
+      background: #0c8fa0;
       color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-size: 18px;
+      box-shadow: 0 0 20px #708ddd;
     }
+
     input[type="text"] {
       width: 100%;
       padding: 10px;
       font-size: 18px;
       margin-top: 10px;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      border: 4px solid #555657;
+      box-shadow: 0 0 5px #05e448;
       background: #333;
       color: #0ded14;
+      box-sizing: border-box; 
     }
+
     #resultadoEvaluacion {
       margin-top: 20px;
       background: #0f2c2c;
@@ -99,6 +127,36 @@
       border-radius: 6px;
       font-size: 16px;
       line-height: 1.6em;
+      box-shadow: 0 0 5px #05e448;
+    }
+
+    .control-buttons {
+      position: fixed;
+      bottom: 7%;
+      left: 70%;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-color: rgba(0, 255, 255, 0.1);
+    }
+
+    .control-buttons button {
+      background-color: rgba(0, 255, 255, 0.1);
+      color: #00ffff;
+      border: 2px solid #555657;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      font-size: 14px;
+      box-shadow: 0 0 5px #05e448;
+    }
+
+    .control-buttons button:hover {
+      background-color: rgba(0, 255, 255, 0.2);
+      transform: scale(1.05);
     }
   </style>
 </head>
@@ -106,8 +164,8 @@
 <div class="container">
   <div class="seccion izquierda">
     <h1>🧩 ¿Cuál es la contraseña más segura?</h1>
-    <div class="subtitulo">Selecciona la contraseña más segura entre las siguientes:</div>
-    <div class="opciones" id="opcionesJuego"></div>
+    <div class="subtitulo">Elige entre las siguientes:</div>
+    <div class="opciones-millonario" id="opcionesJuego"></div>
     <div class="resultado" id="resultadoJuego"></div>
     <button class="boton-jugar" onclick="cargarJuego()">🔁 Nueva ronda</button>
   </div>
@@ -130,8 +188,6 @@ const baseContraseñas = [
   { texto: "realMadrid", nivel: "Débil", explicacion: "Equipos de fútbol son muy usados como contraseñas." },
   { texto: "dragon", nivel: "Débil", explicacion: "Palabra común en listas de contraseñas filtradas." },
   { texto: "rocky2020", nivel: "Débil", explicacion: "Nombre de mascota + año. Muy frecuente y adivinable." },
-
-  // 🟠 Nivel medio (algo mejor, pero aún con riesgos)
   { texto: "BarcelonaFC2024!", nivel: "Media", explicacion: "Larga y con número, pero si te conocen, es predecible." },
   { texto: "C@feConLeche", nivel: "Media", explicacion: "Mejor que nada, pero puede tener relación contigo." },
   { texto: "Julio*2023", nivel: "Media", explicacion: "Nombre propio + símbolo + año. Predecible si te conocen." },
@@ -139,14 +195,10 @@ const baseContraseñas = [
   { texto: "MisHijos123", nivel: "Media", explicacion: "Palabras personales + número. Mejorable." },
   { texto: "MiPerroRocky", nivel: "Media", explicacion: "Nombre de mascota. Muy usado como contraseña." },
   { texto: "Contraseña123", nivel: "Media", explicacion: "Es mejor que '123456', pero aún muy genérica." },
-
-  // ✅ Alta seguridad
   { texto: "Zebra!2023*", nivel: "Alta", explicacion: "Buena longitud y mezcla de caracteres." },
   { texto: "LuzRoja$91", nivel: "Alta", explicacion: "Incluye mayúsculas, símbolo y número. Bastante segura." },
   { texto: "P@ssw0rd!Segura", nivel: "Alta", explicacion: "Simula algo común pero se refuerza con caracteres." },
   { texto: "NoSoyUnRobot_84", nivel: "Alta", explicacion: "Frase inventada, original y segura." },
-
-  // 🟢 Excelente seguridad
   { texto: "X#p9kT$3!qVr", nivel: "Excelente", explicacion: "Generada aleatoriamente. Muy difícil de romper." },
   { texto: "dT4*L7z!wKq#", nivel: "Excelente", explicacion: "Muy compleja y sin sentido lógico. Ideal." }
 ];
@@ -164,19 +216,21 @@ function cargarJuego() {
     }
   }
 
+  const letras = ["A", "B", "C", "D"];
   opciones.innerHTML = "";
-  seleccionadas.forEach((opcion) => {
+  seleccionadas.forEach((opcion, i) => {
     const div = document.createElement("div");
     div.className = "opcion";
-    div.innerText = opcion.texto;
+    div.innerText = `${letras[i]}: ${opcion.texto}`;
     div.onclick = () => {
       opciones.querySelectorAll(".opcion").forEach(o => o.onclick = null);
-      div.style.background = "#ffc107";
+      div.classList.add("seleccionada");
       const niveles = { "Débil": 0, "Media": 1, "Alta": 2, "Excelente": 3 };
       const mejor = Math.max(...seleccionadas.map(c => niveles[c.nivel]));
       const seleccionada = niveles[opcion.nivel];
       setTimeout(() => {
-        div.style.background = (seleccionada === mejor) ? "#4caf50" : "#f44336";
+        div.classList.remove("seleccionada");
+        div.classList.add(seleccionada === mejor ? "correcta" : "incorrecta");
         resultado.innerHTML = seleccionada === mejor
           ? `✅ ¡Correcto! "${opcion.texto}" es la más segura.<br><i>Explicación:</i> ${opcion.explicacion}`
           : `❌ No es la más segura. Nivel: ${opcion.nivel}<br><i>Explicación:</i> ${opcion.explicacion}`;
@@ -197,19 +251,34 @@ function traducir(str) {
     .replace("year", "año").replace("years", "años")
     .replace("century", "siglo").replace("centuries", "siglos");
 }
+
 function traducirFeedback(str) {
   const mapa = {
-    "Add another word or two. Uncommon words are better.": "Agrega otra palabra o dos. Palabras poco comunes son mejores.",
+      "Add another word or two. Uncommon words are better.": "Agrega otra palabra o dos. Palabras poco comunes son mejores.",
     "Names and surnames by themselves are easy to guess": "Los nombres y apellidos son fáciles de adivinar.",
     "This is a top-10 common password": "Esta es una de las 10 contraseñas más comunes.",
     "This is a top-100 common password": "Esta es una de las 100 contraseñas más comunes.",
     "This is a very common password": "Esta es una contraseña muy común.",
     "This is similar to a commonly used password": "Es similar a una contraseña comúnmente utilizada.",
     "A word by itself is easy to guess": "Una sola palabra es fácil de adivinar.",
-    "Avoid dates and years that are associated with you": "Evita fechas y años que estén relacionados contigo",
+    "Avoid dates and years that are associated with you": "Evita fechas y años que estén relacionados contigo.",
     "Common names and surnames are easy to guess": "Los nombres y apellidos comunes son fáciles de adivinar.",
-    "Capitalization doesn't help very much" : "El uso de Mayúsculas no mejora mucho la seguridad."
+    "Capitalization doesn't help very much": "El uso de mayúsculas no mejora mucho la seguridad.",
+    "Repeats like \"aaa\" are easy to guess": "Repeticiones como \"aaa\" son fáciles de adivinar.",
+    "Sequences like abc or 6543 are easy to guess": "Secuencias como abc o 6543 son fáciles de adivinar.",
+    "Recent years are easy to guess": "Los años recientes son fáciles de adivinar.",
+    "Dates are often easy to guess": "Las fechas suelen ser fáciles de adivinar.",
+    "This is a previously breached password": "Esta contraseña ha aparecido en filtraciones de datos.",
+    "Straight rows of keys are easy to guess": "Filas rectas del teclado (como 'asdfgh') son fáciles de adivinar.",
+    "Short keyboard patterns are easy to guess": "Los patrones cortos de teclado son fáciles de adivinar.",
+    "Use a longer keyboard pattern with more turns": "Usa un patrón más largo de teclado con más giros.",
+    "Use a longer phrase or add more words": "Usa una frase más larga o agrega más palabras.",
+    "Predictable substitutions like '@' instead of 'a' don't help very much": "Sustituciones predecibles como '@' en lugar de 'a' no ayudan mucho.",
+    "Use a few words, avoid common phrases": "Usa algunas palabras, evita frases comunes.",
+    "Avoid repeated words and characters" : "Evita palabras y letras repetidas",
+    "No need for symbols, digits, or uppercase letters": "No necesitas símbolos, números ni mayúsculas obligatoriamente."
   };
+
   return mapa[str] || str;
 }
 
@@ -237,7 +306,64 @@ function evaluarContraseña() {
   `;
 }
 
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch((err) => {
+      alert(`Error al entrar en pantalla completa: ${err.message}`);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+function goToMenu() {
+  window.location.href = "../Index.html";
+}
+
+function activarPantallaCompleta() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.warn("No se pudo activar pantalla completa:", err);
+    });
+  }
+}
+
+window.addEventListener('click', activarPantallaCompleta, { once: true });
+
 cargarJuego();
+
+document.getElementById("inputPassword").addEventListener("focus", () => {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  }
+});
+
+const controlButtons = document.querySelector(".control-buttons");
+let originalHeight = window.innerHeight;
+
+window.addEventListener("resize", () => {
+  const currentHeight = window.innerHeight;
+
+  const keyboardVisible = currentHeight < originalHeight - 100;
+
+  if (keyboardVisible) {
+    controlButtons.style.display = "none";
+  } else {
+    controlButtons.style.display = "flex";
+  }
+});
+
+// También restaurar al salir del input por si no hay resize
+document.getElementById("inputPassword").addEventListener("blur", () => {
+  controlButtons.style.display = "flex";
+});
+
 </script>
+
+<div class="control-buttons">
+  <button onclick="toggleFullscreen()">🔲 Pantalla Completa</button>
+  <button onclick="goToMenu()">🏠 Volver al Menú</button>
+</div>
+
 </body>
 </html>
