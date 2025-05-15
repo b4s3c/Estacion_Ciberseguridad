@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ciberestación de Seguridad</title>
+  <style>
+    html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto; /* ✅ Habilita el scroll vertical */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #ffffff;
+  }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding-top: 15px;
+      
+    }
+
+    h1 {
+      font-size: 2.8em;
+      color: #00ffff;
+      text-shadow: 0 0 15px #00ffff;
+      margin-bottom: 50px;
+    }
+
+    .module-container {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      flex-wrap: wrap;
+      padding: 10px;
+    }
+
+    .module {
+  position: relative;
+  width: 250px;
+  height: 350px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 20px;
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff inset;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+
+    .module:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 40px #00ffff;
+    }
+
+    .module h2 {
+  color: #00ffcc;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.module p {
+  color: #b0bec5;
+  font-size: 15px;
+  padding: 0 10px;
+  font-weight: bold;
+}
+
+.split-line {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: #00ffff;
+  box-shadow: 0 0 10px #00ffff;
+  z-index: 1;
+  transition: transform 0.5s ease;
+}
+
+.split-line.left {
+  left: 50%;
+  transform: translateX(-1px);
+}
+
+.split-line.right {
+  right: 50%;
+  transform: translateX(1px);
+}
+
+.module:hover .split-line.left {
+  transform: translateX(-100px);
+}
+
+.module:hover .split-line.right {
+  transform: translateX(100px);
+}
+
+    
+
+    .credits {
+      margin-top: 50px;
+      padding: 30px 10px;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-top: 2px solid #00ffff;
+    }
+
+    .credits .logos {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 50px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    .credits img {
+      height: 60px;
+      filter: drop-shadow(0 0 6px #00ffff);
+    }
+
+    .credits p {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .control-buttons {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-buttons button {
+  background-color: rgba(0, 255, 255, 0.1);
+  color: #00ffff;
+  border: 2px solid #00ffff;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  font-size: 14px;
+  box-shadow: 0 0 10px #00ffff;
+}
+
+.control-buttons button:hover {
+  background-color: rgba(0, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <div class="content">
+    <h1>🛡️ Ciberestación de Seguridad</h1>
+    <div class="module-container">
+      <div class="module" onclick="openModule('Modulo1/modulo1con_diccionario_zxcvbn.html')">
+           <div class="split-line left"></div>
+           <div class="split-line right"></div>
+        <h2>🔒 Módulo 1</h2>
+        <p>Simulador de Contraseñas</p>
+      </div>
+      <div class="module" onclick="openModule('Modulo2/modulo2.html')">
+         <div class="split-line left"></div>
+         <div class="split-line right"></div>
+       <h2>✉️ Módulo 2</h2>
+        <p>Correos Phishing Interactivos</p>
+      </div>
+      <div class="module" onclick="openModule('http://localhost:5000/')">
+        <div class="split-line left"></div>
+         <div class="split-line right"></div>
+       <h2>📡 Módulo 3</h2>
+        <p>Escáner de Red Educativo</p>
+      </div>
+    </div>
+
+    <div class="credits">
+      <div class="logos">
+        <img src="fablabponfe.png" alt="Fablab Ponferrada" />
+        <img src="ayuntamiento.png" alt="Ayuntamiento de Ponferrada" />
+      </div>
+      <p>
+        Proyecto realizado en Fablab Ponferrada junto con Ayuntamiento de Ponferrada<br>
+        Diseñado y creado por Jorge Fernández López
+      </p>
+    </div>
+  </div>
+
+ 
+  <script>
+   
+   function openModule(url) {
+      window.location.href = url;
+    }
+
+    // === Código de animación estilo circuitos (WindOso) ===
+    var can = document.getElementById("canvas");
+    var ctx = can.getContext("2d");
+    can.width = window.innerWidth;
+    can.height = window.innerHeight;
+    can.style.background = "black";
+    var p = [];
+
+    function Clear() {
+      ctx.fillStyle = "rgba(0,0,0,0.07)";
+      ctx.fillRect(0, 0, can.width, can.height);
+    }
+
+    function particle(x, y, speed, c) {
+      this.x = x;
+      this.y = y;
+      this.speed = speed;
+      this.upd = function () {
+        ctx.strokeStyle = c;
+        ctx.lineWidth = 1;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        this.x += this.speed.x;
+        this.y += this.speed.y;
+        ctx.lineTo(this.x, this.y);
+        ctx.stroke();
+        this.ang = Math.atan2(this.speed.y, this.speed.x);
+        this.mag = Math.sqrt(this.speed.x ** 2 + this.speed.y ** 2);
+        var op = [this.ang + Math.PI / 4, this.ang - Math.PI / 4];
+        var ch = Math.floor(Math.random() * op.length);
+        if (Math.random() < 0.05) {
+          this.speed.x = Math.cos(op[ch]) * this.mag;
+          this.speed.y = Math.sin(op[ch]) * this.mag;
+        }
+      };
+    }
+
+    var speed = 5;
+    var period = 1000;
+
+    function pulse() {
+      setTimeout(pulse, period);
+      var h = Math.random() * (210 - 150) + 150;
+      for (var i = 0; i < 56; i++) {
+        p.push(
+          new particle(
+            can.width / 2,
+            can.height / 2,
+            {
+              x: Math.cos((i / 8) * 2 * Math.PI) * speed,
+              y: Math.sin((i / 8) * 2 * Math.PI) * speed,
+            },
+            "hsl(" + h + ",100%,50%)"
+          )
+        );
+      }
+    }
+
+    function gameMove() {
+      requestAnimationFrame(gameMove);
+      Clear();
+      for (var i = 0; i < p.length; i++) {
+        p[i].upd();
+        if (
+          p[i].x < 0 ||
+          p[i].x > can.width ||
+          p[i].y < 0 ||
+          p[i].y > can.height
+        ) {
+          p.splice(i, 1);
+        }
+      }
+    }
+
+    pulse();
+    gameMove();
+
+     var can = document.getElementById("canvas");
+  var ctx = can.getContext("2d");
+
+  function resizeCanvas() {
+    can.width = window.innerWidth;
+    can.height = window.innerHeight;
+  }
+
+  // Llama al resizeCanvas al cargar
+  resizeCanvas();
+
+  // Y también cuando la ventana cambie de tamaño
+  window.addEventListener('resize', resizeCanvas);
+
+  can.style.background = "black";
+  var p = [];
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch((err) => {
+      alert(`Error al entrar en pantalla completa: ${err.message}`);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+function goToMenu() {
+  window.location.href = "Index.html";
+}
+
+function activarPantallaCompleta() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.warn("No se pudo activar pantalla completa:", err);
+    });
+  }
+}
+
+window.addEventListener('click', activarPantallaCompleta, { once: true });
+  </script>
+
+  <div class="control-buttons">
+  <button onclick="toggleFullscreen()">🔲 Pantalla Completa</button>
+  <button onclick="goToMenu()">🏠 Volver al Menú</button>
+</div>
+
+</body>
+</html>
