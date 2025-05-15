@@ -43,11 +43,13 @@
       padding: 10px 20px;
       font-size: 16px;
       font-weight: bold;
-      background-color: #00ffcc;
-      border: none;
-      color: black;
+      background-color: #000c0a;
+      border: 1px solid #0f0;
+      color: #0f0;
       cursor: pointer;
       border-radius: 5px;
+      box-shadow: 0 0 10px #0f0;
+      
     }
 
     .resultado {
@@ -118,6 +120,36 @@
     svg circle:hover {
       filter: drop-shadow(0 0 6px #00ffcc);
     }
+
+    .control-buttons {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-buttons button {
+  background-color: rgba(0, 255, 255, 0.1);
+  color: #00ff6a;
+  border: 2px solid #000000;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  font-size: 14px;
+  box-shadow: 0 0 10px #0f0;
+  background-color: #000;
+}
+
+.control-buttons button:hover {
+  background-color: rgba(0, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
   </style>
 </head>
 <body>
@@ -126,7 +158,8 @@
     <div style="text-align: center;">
       <h1>🔍 Escáner de Red - Módulo 3</h1>
     </div>
-    <button onclick="iniciarEscaneo()">Iniciar Escaneo</button>
+    <button onclick="iniciarEscaneo('completo')">🌊 Escaneo Completo</button>
+    <button onclick="iniciarEscaneo('rapido')">⚡ Escaneo Rápido</button>
     <div id="estado">🔄 Escaneando red...</div>
     <div id="resultados"></div>
     <div style="text-align: center;">
@@ -174,23 +207,23 @@
     }
     setInterval(drawMatrix, 33);
 
-    function iniciarEscaneo() {
-      document.getElementById("estado").style.display = "block";
-      document.getElementById("resultados").innerHTML = "";
-      document.getElementById("mapa").innerHTML = "";
+    function iniciarEscaneo(tipo) {
+  document.getElementById("estado").style.display = "block";
+  document.getElementById("resultados").innerHTML = "";
+  document.getElementById("mapa").innerHTML = "";
 
-      fetch("/scan")
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("estado").style.display = "none";
-          mostrarResultados(data);
-          dibujarMapa(data);
-        })
-        .catch(err => {
-          document.getElementById("estado").style.display = "none";
-          document.getElementById("resultados").innerHTML = `<p style='color:red;'>❌ Error: ${err}</p>`;
-        });
-    }
+  fetch(`/scan?tipo=${tipo}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("estado").style.display = "none";
+      mostrarResultados(data);
+      dibujarMapa(data);
+    })
+    .catch(err => {
+      document.getElementById("estado").style.display = "none";
+      document.getElementById("resultados").innerHTML = `<p style='color:red;'>❌ Error: ${err}</p>`;
+    });
+}
 
     function mostrarResultados(dispositivos) {
       const contenedor = document.getElementById("resultados");
@@ -257,7 +290,7 @@
           `Autenticación omitida (RTSP sin protección)`,
           `Obteniendo imagen ...`
         ], () => {
-          cont.innerHTML += `<img src="/simulacion/camara" alt="Cámara IP" style="max-width:100%; margin-top:10px; border:1px solid #0f0;">`;
+          cont.innerHTML += `<img src="/simulacion/camara/${ip}" alt="Cámara IP" style="max-width:100%; margin-top:10px; border:1px solid #0f0;">`;
         });
       } else if (puertos.some(p => p.includes("23/"))) {
         animar([
@@ -374,6 +407,51 @@
           <text x="${x - 10}" y="${y + 5}" font-size="14" fill="#000">${icon}</text>`;
       });
     }
+
+    function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch((err) => {
+      alert(`Error al entrar en pantalla completa: ${err.message}`);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+function goToMenu() {
+  window.history.back();
+}
+
+
+
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch((err) => {
+      alert(`Error al entrar en pantalla completa: ${err.message}`);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+
+function activarPantallaCompleta() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.warn("No se pudo activar pantalla completa:", err);
+    });
+  }
+}
+
+window.addEventListener('click', activarPantallaCompleta, { once: true });
+
   </script>
+
+  <div class="control-buttons">
+  <button onclick="toggleFullscreen()">🔲 Pantalla Completa</button>
+  <button onclick="goToMenu()">🏠 Volver al Menú</button>
+</div>
+
 </body>
 </html>
