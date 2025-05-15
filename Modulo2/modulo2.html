@@ -87,7 +87,7 @@
     }
     .email-date {
       font-size: 12px;
-      color: #888;
+      color: #888888;
     }
     .email-window {
       max-width: 1300px;
@@ -157,6 +157,36 @@
       border-radius: 6px;
       cursor: pointer;
     }
+
+    .control-buttons {
+  position: fixed;
+  top: 78%;
+  left: 10px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-buttons button {
+  background-color: rgba(0, 255, 255, 0.1);
+  color: #000000;
+  border: 2px solid #bec0c0;
+  border-radius: 12px;
+  padding: 8px   5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  font-size: 12px;
+  box-shadow: 0 0 20px #708ddd;
+  background-color: #ffffff;
+}
+
+.control-buttons button:hover {
+  background-color: rgba(0, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
   </style>
 </head>
 <body>
@@ -452,6 +482,48 @@
     }
 
     renderInbox();
+
+    function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch((err) => {
+      alert(`Error al entrar en pantalla completa: ${err.message}`);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+function goToMenu() {
+  window.location.href = "../Index.html";
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch((err) => {
+      alert(`Error al entrar en pantalla completa: ${err.message}`);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+
+function activarPantallaCompleta() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.warn("No se pudo activar pantalla completa:", err);
+    });
+  }
+}
+
+window.addEventListener('click', activarPantallaCompleta, { once: true });
+
   </script>
+
+  <div class="control-buttons">
+  <button onclick="toggleFullscreen()">🔲 Pantalla Completa</button>
+  <button onclick="goToMenu()">🏠 Ir al Menú</button>
+</div>
+
 </body>
 </html>
